@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>短冊ジェネレーター</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    .tanzaku-area { position: relative; display: inline-block; }
+    #tanzaku-canvas { border: 1px solid #ccc; }
+    .controls { margin: 20px auto; text-align: left; display: inline-block; }
+    .checkbox-group label { display: block; margin: 3px 0; }
+    textarea { width: 250px; height: 40px; resize: none; }
+    button { margin-top: 10px; padding: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>★あなたの推しを選んでね！</h2>
+  <div class="controls">
+    <div class="checkbox-group">
+      <label><input type="radio" name="character" value="001.jpg"> 透明人間</label>
+      <label><input type="radio" name="character" value="002.jpg"> 天才ハカー</label>
+      <label><input type="radio" name="character" value="003.jpg"> マッドサイエンティスト</label>
+      <label><input type="radio" name="character" value="004.jpg"> 合法ロリ邪神</label>
+      <label><input type="radio" name="character" value="005.jpg"> 酒飲みヴァンパイア</label>
+      <label><input type="radio" name="character" value="006.jpg"> ケセランパセラン</label>
+      <label><input type="radio" name="character" value="007.jpg"> 弾き語りお嬢</label>
+      <label><input type="radio" name="character" value="008.jpg"> なにわの天然</label>
+      <label><input type="radio" name="character" value="009.jpg"> 負け知らずヤンキー</label>
+      <label><input type="radio" name="character" value="010.jpg"> 地雷系あかちゃん</label>
+      <label><input type="radio" name="character" value="011.jpg"> ダウナー系黒幕</label>
+      <label><input type="radio" name="character" value="012.jpg"> 母性お姉さん</label>
+      <label><input type="radio" name="character" value="013.jpg"> IQいちおく大人のれち</label>
+    </div>
+  </div>
+
+  <h2>★願い事を書いてね！（30文字まで）</h2>
+  <textarea id="wish" maxlength="30" placeholder="ここに願い事を入力"></textarea>
+  <br>
+  <button onclick="generateImage()">画像を生成</button>
+
+  <div class="tanzaku-area">
+    <canvas id="tanzaku-canvas" width="500" height="500"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('tanzaku-canvas');
+    const ctx = canvas.getContext('2d');
+    let baseImage = new Image();
+    let selectedImage = '001.jpg';
+
+    function loadImage(src, callback) {
+      baseImage.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+        if (callback) callback();
+      };
+      baseImage.src = src;
+    }
+
+    document.querySelectorAll('input[name="character"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        selectedImage = e.target.value;
+        loadImage(selectedImage, drawText);
+      });
+    });
+
+    function drawText() {
+      const text = document.getElementById('wish').value;
+      const lines = text.match(/.{1,15}/g) || [];
+      ctx.font = '20px sans-serif';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+
+      // テキスト描画位置（短冊範囲: x = 205?295, y = 70?430）
+      const baseX = 250;
+      const baseY = 250;
+
+      lines.forEach((line, i) => {
+        ctx.fillText(line, baseX, baseY - 10 + i * 30);
+      });
+    }
+
+    function generateImage() {
+      loadImage(selectedImage, () => {
+        drawText();
+        const link = document.createElement('a');
+        link.download = 'tanzaku.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    // 初期画像読み込み
+    window.onload = () => loadImage(selectedImage);
+  </script>
+</body>
+</html>
