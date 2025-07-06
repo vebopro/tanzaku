@@ -37,6 +37,7 @@
   <textarea id="wish" maxlength="30" placeholder="ここに願い事を入力"></textarea>
   <br>
   <button onclick="generateImage()">画像を生成</button>
+  <button id="tweet-button" disabled>Xに投稿する</button>
 
   <div class="tanzaku-area">
     <canvas id="tanzaku-canvas" width="500" height="500"></canvas>
@@ -47,6 +48,7 @@
     const ctx = canvas.getContext('2d');
     let baseImage = new Image();
     let selectedImage = '001.jpg';
+    let generatedImageURL = '';
 
     function loadImage(src, callback) {
       baseImage = new Image();
@@ -65,40 +67,52 @@
       });
     });
 
-function drawText() {
-  const text = document.getElementById('wish').value;
-  const maxCols = 2;
-  const maxRows = 15;
-  const chars = text.split('');
-  const colWidth = 25;
-  const rowHeight = 22;
-  const offsetX = 10;
-  const offsetY = 80;
+    function drawText() {
+      const text = document.getElementById('wish').value;
+      const maxCols = 2;
+      const maxRows = 15;
+      const chars = text.split('');
+      const colWidth = 25;
+      const rowHeight = 22;
+      const offsetX = 10;
+      const offsetY = 80;
+      const startX = 360 - offsetX + 5;
+      const startY = 80 + offsetY;
 
-  const startX = 360 - offsetX + 5; // ← 右に5px移動
-  const startY = 80 + offsetY;
+      ctx.font = '20px sans-serif';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
 
-  ctx.font = '20px sans-serif';
-  ctx.fillStyle = '#000';
-  ctx.textAlign = 'center';
+      for (let i = 0; i < chars.length && i < maxCols * maxRows; i++) {
+        const col = Math.floor(i / maxRows);
+        const row = i % maxRows;
+        const x = startX - col * colWidth;
+        const y = startY + row * rowHeight;
+        ctx.fillText(chars[i], x, y);
+      }
+    }
 
-  for (let i = 0; i < chars.length && i < maxCols * maxRows; i++) {
-    const col = Math.floor(i / maxRows);
-    const row = i % maxRows;
-    const x = startX - col * colWidth;
-    const y = startY + row * rowHeight;
-    ctx.fillText(chars[i], x, y);
-  }
-}
     function generateImage() {
       loadImage(selectedImage, () => {
         drawText();
+        const dataURL = canvas.toDataURL();
+        generatedImageURL = dataURL;
+
         const link = document.createElement('a');
         link.download = 'tanzaku.png';
-        link.href = canvas.toDataURL();
+        link.href = dataURL;
         link.click();
+
+        document.getElementById('tweet-button').disabled = false;
       });
     }
+
+    document.getElementById('tweet-button').addEventListener('click', () => {
+      const text = encodeURIComponent('#推しに願いをジェネレーター');
+      const url = encodeURIComponent(window.location.href);
+      const twitterURL = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+      window.open(twitterURL, '_blank');
+    });
 
     window.onload = () => loadImage(selectedImage);
   </script>
