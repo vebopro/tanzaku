@@ -67,17 +67,24 @@
     function drawText() {
       const text = document.getElementById('wish').value;
       const lines = text.match(/.{1,15}/g) || [];
+      ctx.save();
+      ctx.translate(250, 250); // 短冊の中心
+      ctx.rotate(-Math.PI / 2); // 縦書き用に反時計回り90度回転
+
       ctx.font = '20px sans-serif';
       ctx.fillStyle = '#000';
       ctx.textAlign = 'center';
 
-      // テキスト描画位置（短冊範囲: x = 205?295, y = 70?430）
-      const baseX = 250;
-      const baseY = 250;
-
+      const startY = -70; // 1行目のY位置（回転後）
       lines.forEach((line, i) => {
-        ctx.fillText(line, baseX, baseY - 10 + i * 30);
+        const chars = line.split('');
+        const totalHeight = chars.length * 20;
+        const startCharY = -(totalHeight / 2);
+        chars.forEach((ch, j) => {
+          ctx.fillText(ch, -100 + i * 25, startCharY + j * 20); // X座標で列ずらす
+        });
       });
+      ctx.restore();
     }
 
     function generateImage() {
@@ -90,7 +97,6 @@
       });
     }
 
-    // 初期画像読み込み
     window.onload = () => loadImage(selectedImage);
   </script>
 </body>
