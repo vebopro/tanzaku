@@ -49,6 +49,7 @@
     let selectedImage = '001.jpg';
 
     function loadImage(src, callback) {
+      baseImage = new Image();
       baseImage.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
@@ -64,29 +65,31 @@
       });
     });
 
-    function drawText() {
-      const text = document.getElementById('wish').value;
-      const lines = text.match(/.{1,15}/g) || [];
-      ctx.save();
-      ctx.translate(250, 250); // 短冊の中心
-      ctx.rotate(-Math.PI / 2); // 縦書き用に反時計回り90度回転
+function drawText() {
+  const text = document.getElementById('wish').value;
+  const maxCols = 2;
+  const maxRows = 15;
+  const chars = text.split('');
+  const colWidth = 25;
+  const rowHeight = 22;
+  const offsetX = 10;
+  const offsetY = 80;
 
-      ctx.font = '20px sans-serif';
-      ctx.fillStyle = '#000';
-      ctx.textAlign = 'center';
+  const startX = 360 - offsetX + 5; // ← 右に5px移動
+  const startY = 80 + offsetY;
 
-      const startY = -70; // 1行目のY位置（回転後）
-      lines.forEach((line, i) => {
-        const chars = line.split('');
-        const totalHeight = chars.length * 20;
-        const startCharY = -(totalHeight / 2);
-        chars.forEach((ch, j) => {
-          ctx.fillText(ch, -100 + i * 25, startCharY + j * 20); // X座標で列ずらす
-        });
-      });
-      ctx.restore();
-    }
+  ctx.font = '20px sans-serif';
+  ctx.fillStyle = '#000';
+  ctx.textAlign = 'center';
 
+  for (let i = 0; i < chars.length && i < maxCols * maxRows; i++) {
+    const col = Math.floor(i / maxRows);
+    const row = i % maxRows;
+    const x = startX - col * colWidth;
+    const y = startY + row * rowHeight;
+    ctx.fillText(chars[i], x, y);
+  }
+}
     function generateImage() {
       loadImage(selectedImage, () => {
         drawText();
